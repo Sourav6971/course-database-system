@@ -13,7 +13,7 @@ function adminMiddleware(req, res, next) {
       next();
     } else {
       res.status(403).json({
-        msg: "User does not exist",
+        msg: "Admin does not exist",
       });
     }
   });
