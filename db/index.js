@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
-console.log(process.env.MONGODB_URL);
-mongoose.connect(process.env.MONGODB_URL);
+const url = process.env.MONGODB_URL;
+
+mongoose
+  .connect(url.trim())
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err.message));
 
 //defining the admin schema
 const AdminSchema = new mongoose.Schema({
