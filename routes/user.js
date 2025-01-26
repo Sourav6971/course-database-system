@@ -1,8 +1,12 @@
 const { Router, request } = require("express");
-router = Router();
+const router = Router();
 const userMiddleware = require("../middlewares/user");
 const { User, Course } = require("../db");
 const { default: mongoose } = require("mongoose");
+
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const secret = process.env.JWT_SECRET;
 
 //The below route is endpoint for /user/signup and not for just /signup
 router.post("/signup", (req, res) => {
@@ -16,6 +20,20 @@ router.post("/signup", (req, res) => {
     msg: "User created successfuly",
   });
 });
+router.post("/signin", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const user = await User.findOne({
+    username,
+    password,
+  });
+  if (user) {
+    const token = jwt.sign({ username }, secret);
+    res.json({
+      token,
+    });
+  }
+});
 router.post("/courses", async (req, res) => {
   //implement listing of all courses
   const response = await Course.find({});
@@ -27,21 +45,9 @@ router.post("/course/:courseId", userMiddleware, async (req, res) => {
   //immplementing logic for purchasing courses
   //important one
   const courseId = req.params.courseId;
-  const username = req.headers.username;
-  await User.updateOne(
-    {
-      username: username,
-    },
-    {
-      $push: {
-        purchasedCourse: new mongoose.Types.ObjectId(courseId),
-      },
-    }
-  ).catch((e) => {
-    console.log(e);
-  });
+  const username = req.username;
   res.json({
-    msg: "course added successfully",
+    msg: username,
   });
 });
 router.get("/purchasedCourses", userMiddleware, async (req, res) => {

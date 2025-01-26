@@ -1,7 +1,10 @@
 const { Router } = require("express");
 const adminMiddleware = require("../middlewares/admin");
 const router = Router();
-const { Admin, Course } = require("../db/index");
+const { Admin, Course, User } = require("../db/index");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const secret = process.env.JWT_SECRET;
 
 //The below route is the endpoint of /admin/signup and not for /signup
 
@@ -26,6 +29,29 @@ router.post("/signup", async (req, res) => {
     });
     res.status(200).json({
       msg: "Admin created successfully",
+    });
+  }
+});
+router.post("/signin", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const user = await Admin.findOne({
+    username,
+    password,
+  });
+  if (user) {
+    const token = jwt.sign(
+      {
+        username,
+      },
+      secret
+    );
+    res.json({
+      token,
+    });
+  } else {
+    res.status(411).json({
+      msg: "Incorrect username or password",
     });
   }
 });
