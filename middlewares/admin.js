@@ -1,21 +1,29 @@
-const { Admin } = require("../db/index");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 //middleware for handling auth
-function adminMiddleware(req, res, next) {
-  //implementing admin auth
-  const username = req.headers.username;
-  const password = req.headers.password;
-  Admin.findOne({
-    username: username,
-    password: password,
-  }).then((value) => {
-    if (value) {
+async function adminMiddleware(req, res, next) {
+  //implementing admin auth for jwt tokens
+  const token = req.headers.authorization;
+  //the token would look like Bearer afsdgetsgdhesh....
+  const words = token.split(" ");
+  const jwtToken = words[1];
+  const secret = process.env.JWT_SECRET;
+
+  try {
+    const decodedValue = jwt.verify(jwtToken, secret);
+
+    if (decodedValue.username) {
       next();
     } else {
       res.status(403).json({
-        msg: "Admin does not exist",
+        msg: "you are not authenticated",
       });
     }
-  });
+  } catch (e) {
+    res.status(404).json({
+      err: "invalid token",
+    });
+  }
 }
 module.exports = adminMiddleware;
